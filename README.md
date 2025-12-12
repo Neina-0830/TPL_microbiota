@@ -44,3 +44,7 @@ Calculate_null_MPDik.R  ##Script for calculating MPDik in null model of differen
 Taylor_law_power_statistical_tests.R  ##Statistical test scripts comparing different TPL parameters.
 
 Fig. 2&S5.R  ##Script for ploting figures.
+
+## Expected run time
+Run time depends on the size of the input data (e.g., number of samples, taxa, and tree size) and available computational resources.
+For typical datasets, execution may take from several hours to several days.
