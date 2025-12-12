@@ -21,8 +21,8 @@ eg. install.packages("vegan")
 ## Instruction to Use
 
 data/
-##this folder contains the data (in .csv format) used for the analysis.
-
+##this folder contains the data (in .csv format) used for the analysis. No separate toy dataset is provided, as the included example files
+represent real community data and can be directly used for analysis.
 
 code/
 ##this folder contains code to replicate results. 
