@@ -14,6 +14,8 @@ R https://www.r-project.org/
 
 rstudio https://rstudio.com/
 
+eg. install.packages("vegan")
+
 (time required to install software and packages <2hr)
 
 ## Instruction to Use
@@ -25,13 +27,13 @@ data/
 code/
 ##this folder contains code to replicate results. 
 
-Taylor_law_power_tTTPL_test.R ##Script for testing Type IV Taylor's power law of different microbiota groups.
+Taylor_law_power_tTTPL_test.R ##Script for testing Type IV Taylor's power law (TPL) of different microbiota groups.
 
-Taylor_law_power_tTTPL_test_phylum.R  ##Script for testing Type IV Taylor's power law of different microbiota groups at Phylum level.
+Taylor_law_power_tTTPL_test_phylum.R  ##Script for testing TPL law of different microbiota groups at Phylum level.
 
-Taylor_law_power_pTTPL_test.R  ##Script for testing phylogenetic-based Taylor's power law of different microbiota groups.
+Taylor_law_power_pTTPL_test.R  ##Script for testing phylogenetic-based TPL of different microbiota groups.
 
-Taylor_law_power_pTTPL_test_phylum.R  ##Script for testing phylogenetic-based Taylor's power law of different microbiota groups at Phylum level.
+Taylor_law_power_pTTPL_test_phylum.R  ##Script for testing phylogenetic-based TPL of different microbiota groups at Phylum level.
  
 Taylor_law_power_pTTPL_test_null_model.R  ##Null model analysis using randomized phylogenetic trees with fixed species abundances.
 
@@ -39,4 +41,6 @@ Calculate_MPDik.R  ##Script for calculating MPDik of different microbiota groups
 
 Calculate_null_MPDik.R  ##Script for calculating MPDik in null model of different microbiota groups.
 
-Fig. 2&S5.R ##Script for ploting figures.
+Taylor_law_power_statistical_tests.R  ##Statistical test scripts comparing different TPL parameters.
+
+Fig. 2&S5.R  ##Script for ploting figures.
