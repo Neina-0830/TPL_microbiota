@@ -1,0 +1,21 @@
+Validation performed in the ChatGPT working environment
+=======================================================
+
+1. Python syntax: PASS
+   python -m py_compile code/07_sGLV/*.py
+
+2. Calibration simulator dry-run: PASS
+   All five groups report 3375 parameter/seed combinations per condition.
+
+3. Small synthetic calibration simulation: PASS
+   Archaea test input (3 taxa), one calibration-grid combination generated successfully.
+
+4. Small synthetic process-intensity simulation: PASS
+   Archaea tTTPL, one process, warming condition generated 150 files
+   (10 ranks x 5 intensities x 3 seeds).
+
+5. R static delimiter/string-balance check: PASS for all seven R scripts.
+
+R itself is not installed in this execution environment, so the R scripts could
+not be executed end-to-end here. They require the original empirical input files
+and R package dependencies documented in README_sGLV.md.

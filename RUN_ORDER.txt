@@ -1,0 +1,44 @@
+# Canonical run order
+
+Run all commands from the repository root.
+
+## A. Prepare raw data
+Rscript code/00_prepare_data.R                              # C00
+
+## B. Whole-community TPL
+Rscript code/01_empirical_TPL/01_tTTPL_fit_and_robustness.R # C01
+Rscript code/01_empirical_TPL/02_tTTPL_factorial_statistics.R # C02
+Rscript code/01_empirical_TPL/03_pTTPL_prepare_MPDik_by_plot.R # C03
+Rscript code/01_empirical_TPL/04_pTTPL_fit_full_precision.R # C04
+Rscript code/01_empirical_TPL/05_pTTPL_factorial_statistics.R # C05
+
+## C. Phylogenetic null and subgroup analyses
+Rscript code/02_tipshuffle_null/06_pTTPL_tipshuffle_null_analysis.R # C06
+Rscript code/03_subgroup_TPL/07_tTTPL_subgroup_fit.R         # C07
+Rscript code/03_subgroup_TPL/08_pTTPL_subgroup_fit.R         # C08
+Rscript code/03_subgroup_TPL/09_subgroup_factorial_statistics.R # C09
+
+## D. Environmental and ecosystem-function analyses
+Rscript code/04_environment_SEM/09_prepare_environment_SEM_inputs.R # C10
+Rscript code/04_environment_SEM/12_tTTPL_piecewiseSEM.R      # C13 (sources C11-C12)
+Rscript code/04_environment_SEM/13_pTTPL_piecewiseSEM.R      # C14 (sources C11-C12)
+Rscript code/05_ecosystem_function/14_ecosystem_function_incremental.R # C15
+
+## E. iCAMP
+TPL_ICAMP_GROUP=Bacteria Rscript code/06_iCAMP/15_iCAMP_process_summary.R # C16
+# Repeat only for groups with the corresponding validated iCAMP settings.
+
+## F. sGLV
+python code/07_sGLV/16_check_sGLV_inputs.py                  # C17
+# C19 calibration simulations are computationally intensive and are normally run in HPC chunks.
+python code/07_sGLV/17_sGLV_calibration_simulate.py --group Archaea --condition warming # example C19
+TPL_SGLV_RESAMPLE_MODE=calibration Rscript code/07_sGLV/18_sGLV_resample.R # C20
+TPL_SGLV_CALIBRATION_TPL=both Rscript code/07_sGLV/19_sGLV_calibration_TPL.R # C21
+Rscript code/07_sGLV/20_sGLV_calibration_community_metrics.R # C22
+Rscript code/07_sGLV/21_sGLV_select_top10.R                 # C23
+python code/07_sGLV/22_sGLV_process_intensity_simulate.py --tpl tTTPL --group all --condition both # C24
+python code/07_sGLV/22_sGLV_process_intensity_simulate.py --tpl pTTPL --group all --condition both # C24
+TPL_SGLV_RESAMPLE_MODE=process_intensity TPL_SGLV_TPL=both Rscript code/07_sGLV/18_sGLV_resample.R # C20
+Rscript code/07_sGLV/23_sGLV_tTTPL_process_intensity.R      # C25
+Rscript code/07_sGLV/24_sGLV_pTTPL_process_intensity.R      # C26
+Rscript code/07_sGLV/25_sGLV_process_intensity_importance.R # C27

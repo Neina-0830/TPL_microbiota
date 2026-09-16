@@ -1,0 +1,11 @@
+TPL,Group,BrayDivisor,RichnessDivisor
+tTTPL,Archaea,1000,100
+tTTPL,Bacteria,1000,100
+tTTPL,Fungi_18S,100,1000
+tTTPL,Protists,100,100
+tTTPL,Nematoda,100,1000
+pTTPL,Archaea,1000,1000
+pTTPL,Bacteria,100,10
+pTTPL,Fungi_18S,10,1000
+pTTPL,Protists,100,100
+pTTPL,Nematoda,100,1000

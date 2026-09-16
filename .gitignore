@@ -1,0 +1,16 @@
+# Generated analysis products
+results/
+data/prepared/
+
+# Python/R session artifacts
+__pycache__/
+*.py[cod]
+.Rhistory
+.RData
+.Ruserdata
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+*.swp
+*~
