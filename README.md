@@ -324,12 +324,7 @@ For an archival release, we recommend saving `sessionInfo()`/`renv.lock` for R a
 
 If you use this code or the associated data, please cite the accompanying manuscript:
 
-> *Experimental Warming Amplifies Temporal Variance Scaling Across Diverse Soil Microbiota.*
+> *Experimental Warming Amplifies Temporal Variance Scaling Across Diverse Soil Biota.*
 
 Journal/DOI information can be added here after publication.
 
----
-
-## Code status
-
-The repository contains the final canonical analysis scripts consolidated from the manuscript-development and revision workflows. Superseded and duplicate scripts are listed separately in `EXCLUDED_LEGACY_SCRIPTS.csv` and are not required to reproduce the current analysis.
