@@ -13,9 +13,7 @@ Run from the repository root. Primary sGLV parameter inputs are read from
 ``./data/sGLV`` (override with ``TPL_SGLV_DATA_DIR``), while generated
 simulation/calibration products are written under ``./results/17_sGLV``.
 
-The historical output prefix ``SLM`` is retained only for filename compatibility.
-The model referred to in the manuscript is the stochastic generalized
-Lotka--Volterra (sGLV) model.
+The model is a stochastic generalized Lotka--Volterra (sGLV) model.
 """
 from __future__ import annotations
 
@@ -34,7 +32,7 @@ CONFIG_FILE = HERE / "sGLV_group_config.csv"
 CONDITIONS = ("warming", "unwarming")
 PROCESSES = ("immigration", "growth", "interaction", "noise")
 SEEDS = (0, 1, 2)
-INTENSITIES = (0.0, 0.25, 0.50, 0.75, 1.0)
+SCENARIOS = ("full", "immigration_removed", "growth_removed", "interaction_removed", "noise_removed")
 
 
 def project_root() -> Path:
@@ -78,7 +76,7 @@ def load_group_config(config_file: Path = CONFIG_FILE) -> Dict[str, dict]:
 
 
 def numeric_token(x: float) -> str:
-    """Stable compact numeric token compatible with the legacy filenames."""
+    """Stable compact numeric token compatible with the calibration filenames."""
     x = float(x)
     if x == 0:
         return "0"
@@ -86,13 +84,9 @@ def numeric_token(x: float) -> str:
     return f"{x:.12g}"
 
 
-def intensity_token(z: float) -> str:
-    return numeric_token(z).replace(".", "p")
-
-
 def calibration_filename(d: float, a: float, g: float, seed: int, noise: float) -> str:
     return (
-        "Time_series_from_SLM_"
+        "Time_series_from_sGLV_"
         f"immigration_d{numeric_token(d)}_"
         f"interaction_sd{numeric_token(a)}_"
         f"growth_g{numeric_token(g)}_"
@@ -101,18 +95,11 @@ def calibration_filename(d: float, a: float, g: float, seed: int, noise: float) 
     )
 
 
-def process_filename(rank: int, d: float, a: float, g: float, seed: int,
-                     noise: float, process: str, intensity: float) -> str:
-    return (
-        f"Time_series_from_SLM_top10rank{int(rank)}_"
-        f"immigration_d{numeric_token(d)}_"
-        f"interaction_sd{numeric_token(a)}_"
-        f"growth_g{numeric_token(g)}_"
-        f"seed{int(seed)}_"
-        f"noise{numeric_token(noise)}_"
-        f"process_{process}_"
-        f"intensity{intensity_token(intensity)}.csv"
-    )
+def process_filename(rank, d, a, g, seed, noise, scenario):
+    return (f"Time_series_from_sGLV_rank{int(rank)}_"
+            f"immigration_d{numeric_token(d)}_interaction_sd{numeric_token(a)}_"
+            f"growth_g{numeric_token(g)}_seed{int(seed)}_"
+            f"noise{numeric_token(noise)}_scenario_{scenario}.csv")
 
 
 def initial_abundance_file(root: Path, cfg: Mapping, condition: str) -> Path:
@@ -254,46 +241,21 @@ def calibrated_parameters(inputs: Mapping, cfg: Mapping, condition: str,
     }
 
 
-def process_intensity_parameters(inputs: Mapping, cfg: Mapping, condition: str,
-                                 immigration: float, interaction: float,
-                                 growth: float, noise: float,
-                                 process: str, intensity: float) -> dict:
-    """
-    Build the process-intensity parameterization used in the revised analysis.
-
-    z = 1 is the calibrated model. At z = 0:
-      immigration -> 0
-      noise       -> 0
-      interaction -> off-diagonal interactions 0; diagonal self-regulation -1
-      growth      -> homogeneous growth (all taxa receive the scalar g)
-    """
-    if process not in PROCESSES:
-        raise ValueError(f"Unknown process: {process}")
-    z = float(intensity)
-    if z < 0 or z > 1:
-        raise ValueError("Intensity must be in [0, 1].")
-
+def process_removal_parameters(inputs, cfg, condition, immigration, interaction,
+                               growth, noise, scenario):
+    """Calibrated full model or one process removed, without recalibration."""
+    if scenario not in SCENARIOS:
+        raise ValueError(f"Unknown scenario: {scenario}")
     p = calibrated_parameters(inputs, cfg, condition, immigration, interaction, growth, noise)
-
-    if process == "immigration":
-        p["immigration_rate"] *= z
-
-    elif process == "noise":
-        p["noise_linear"] *= z
-
-    elif process == "interaction":
-        full = p["interaction_matrix"]
-        scaled = full.copy()
-        offdiag = ~np.eye(full.shape[0], dtype=bool)
-        scaled[offdiag] = z * full[offdiag]
-        np.fill_diagonal(scaled, -1.0)
-        p["interaction_matrix"] = scaled
-
-    elif process == "growth":
-        species_specific = p["growth_rate"]
-        homogeneous = np.ones_like(species_specific) * float(growth)
-        p["growth_rate"] = (1.0 - z) * homogeneous + z * species_specific
-
+    if scenario == "immigration_removed":
+        p["immigration_rate"] = np.zeros_like(p["immigration_rate"])
+    elif scenario == "noise_removed":
+        p["noise_linear"] = 0.0
+    elif scenario == "interaction_removed":
+        p["interaction_matrix"] = -np.eye(len(p["initial_condition"]))
+    elif scenario == "growth_removed":
+        rates = p["growth_rate"]
+        p["growth_rate"] = np.full_like(rates, rates.mean())
     return p
 
 

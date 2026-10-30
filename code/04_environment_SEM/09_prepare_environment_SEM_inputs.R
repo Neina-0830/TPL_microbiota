@@ -54,6 +54,7 @@ source_map <- c(
   moisture = "annual_moisture",
   pH = "pH",
   NO3N = "NO3-N",
+  NH4N = "NH4-N",
   TC = "TC",
   plant_biomass = "FlTotl",
   plant_richness = "plant richness",
@@ -80,6 +81,8 @@ plot_env <- do.call(rbind, lapply(plots, function(p) {
     pH_cv = cv(d[[source_map["pH"]]]),
     NO3N_mean = mean_safe(d[[source_map["NO3N"]]]),
     NO3N_cv = cv(d[[source_map["NO3N"]]]),
+    NH4N_mean = mean_safe(d[[source_map["NH4N"]]]),
+    NH4N_cv = cv(d[[source_map["NH4N"]]]),
     TC_mean = mean_safe(d[[source_map["TC"]]]),
     TC_cv = cv(d[[source_map["TC"]]]),
     plant_biomass_mean = mean_safe(d[[source_map["plant_biomass"]]]),
@@ -149,7 +152,7 @@ write_with_plot_rownames(all48, file.path(OUT_DIR, "tTTPL_SEM_input.csv"))
 write_with_plot_rownames(all48, file.path(OUT_DIR, "pTTPL_SEM_input.csv"))
 write.csv(meta, file.path(OUT_DIR, "treatment_metadata_48plots.csv"), row.names = FALSE, quote = FALSE)
 write.csv(data.frame(Manuscript_variable = c(
-  "temperature", "moisture", "pH", "NO3N", "TC", "plant_biomass", "plant_richness",
+  "temperature", "moisture", "pH", "NO3N", "NH4N", "TC", "plant_biomass", "plant_richness",
   "ER", "GPP", "NEE", "Ra", "Rh", "Rs"
 ), Source_column = unname(source_map)),
 file.path(OUT_DIR, "environment_variable_mapping.csv"), row.names = FALSE, quote = FALSE)

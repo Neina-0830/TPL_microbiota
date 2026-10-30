@@ -25,4 +25,4 @@ Run the preflight check before a calibration job:
 python code/07_sGLV/16_check_sGLV_inputs.py
 ```
 
-All generated simulations, resamples, calibration tables and process-intensity outputs are written under `./results/17_sGLV/`.
+All generated simulations, resamples, calibration tables and process-removal outputs are written under `./results/17_sGLV/`.

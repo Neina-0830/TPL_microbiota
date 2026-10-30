@@ -10,7 +10,6 @@
 #
 # This engine deliberately contains NO forward/stepwise selection. The supplied
 # MODEL_SPEC is the fitted model, whether it was defined a priori or inherited
-# from a previous analysis. Paths hidden from a figure remain in the model.
 # ==============================================================================
 
 assert_packages <- function(pkgs) {

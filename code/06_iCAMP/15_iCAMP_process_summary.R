@@ -42,7 +42,7 @@
 #   TPL_ICAMP_CLASS         classification table
 #   TPL_ICAMP_TREAT         treatment table
 #   TPL_ICAMP_ENV           environmental table; optional for the active workflow
-#   TPL_ICAMP_DETAIL        legacy *.iCAMP.Confidence.detail.rda to reuse
+#   TPL_ICAMP_DETAIL        saved *.iCAMP.Confidence.detail.rda to reuse
 #   TPL_ICAMP_RUN_RAW       TRUE/FALSE; default = TRUE only when no detail exists
 #   TPL_ICAMP_RAND_TIME     default = 200
 #   TPL_ICAMP_NWORKER       default = 20
@@ -191,7 +191,7 @@ ENV_FILE <- Sys.getenv(
   unset = file.path(PREP_DIR, "environment_metadata.csv")
 )
 
-LEGACY_DETAIL_FILE <- Sys.getenv(
+DETAIL_FILE <- Sys.getenv(
   "TPL_ICAMP_DETAIL",
   unset = file.path(OUT_DIR, paste0(PREFIX, ".iCAMP.Confidence.detail.rda"))
 )
@@ -218,7 +218,7 @@ RC_CUT <- 0.95
 CONF_CUT <- 0.975
 OMIT_OPTION <- "no"
 
-DETAIL_EXISTS <- file.exists(CLEAN_DETAIL_RDS) || file.exists(LEGACY_DETAIL_FILE)
+DETAIL_EXISTS <- file.exists(CLEAN_DETAIL_RDS) || file.exists(DETAIL_FILE)
 RUN_RAW <- env_bool("TPL_ICAMP_RUN_RAW", default = !DETAIL_EXISTS)
 
 # ------------------------------------------------------------------------------
@@ -389,9 +389,9 @@ if (RUN_RAW) {
     message("Reusing cleaned iCAMP detail object: ", CLEAN_DETAIL_RDS)
     icres <- readRDS(CLEAN_DETAIL_RDS)
   } else {
-    assert_file(LEGACY_DETAIL_FILE, "iCAMP Confidence detail RDA")
-    message("Reusing legacy iCAMP detail object: ", LEGACY_DETAIL_FILE)
-    icres <- load_icamp_detail_rda(LEGACY_DETAIL_FILE)
+    assert_file(DETAIL_FILE, "iCAMP Confidence detail RDA")
+    message("Reusing saved iCAMP detail object: ", DETAIL_FILE)
+    icres <- load_icamp_detail_rda(DETAIL_FILE)
     saveRDS(icres, CLEAN_DETAIL_RDS)
   }
 }

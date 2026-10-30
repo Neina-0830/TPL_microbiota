@@ -3,7 +3,7 @@
 
 This script does not create or infer model parameterizations.  It verifies that
 all condition-specific empirical vectors and interaction matrices needed by the
-calibration and process-intensity simulations are present before a large HPC run.
+calibration and process-removal simulations are present before a large HPC run.
 
 Run from the repository root:
     python code/07_sGLV/16_check_sGLV_inputs.py

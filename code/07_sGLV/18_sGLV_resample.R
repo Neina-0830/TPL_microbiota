@@ -1,13 +1,13 @@
 # ==============================================================================
 # 18_sGLV_resample.R
 # Resample simulated relative-abundance trajectories to group-specific library size
-# for both calibration-grid and top-10 process-intensity simulations.
+# for both calibration-grid and top-10 process-removal simulations.
 #
 # Environment variables:
 #   TPL_PROJECT_ROOT     repository root (default: getwd())
 #   TPL_SGLV_DATA_DIR    model-derived input root (default: ./data/sGLV)
-#   TPL_SGLV_RESAMPLE_MODE  calibration | process_intensity | all (default: all)
-#   TPL_SGLV_TPL         tTTPL | pTTPL | both (process-intensity mode; default: both)
+#   TPL_SGLV_RESAMPLE_MODE  calibration | process_removal | all (default: all)
+#   TPL_SGLV_TPL         tTTPL | pTTPL | both (process-removal mode; default: both)
 #   TPL_SGLV_GROUPS      comma-separated groups or all (default: all)
 #   TPL_SGLV_RESAMPLE_SEED integer base seed (default: 20260915)
 #   TPL_SGLV_OVERWRITE   TRUE/FALSE (default: FALSE)
@@ -15,9 +15,9 @@
 # Calibration:
 #   get_timeseries/<Group>/raw/<condition>/ -> Resample/<Group>/raw/<condition>/
 #
-# Process intensity:
-#   get_timeseries/<Group>/<TPL>/process_intensity_top10/<process>/<condition>/
-#   -> Resample/<Group>/<TPL>/process_intensity_top10/<process>/<condition>/
+# Process removal:
+#   get_timeseries/<Group>/<TPL>/process_removal_top10/<process>/<condition>/
+#   -> Resample/<Group>/<TPL>/process_removal_top10/<process>/<condition>/
 # ==============================================================================
 
 rm(list = ls())
@@ -50,13 +50,13 @@ TPL_MODE <- Sys.getenv("TPL_SGLV_TPL", unset = "both")
 BASE_SEED <- as.integer(Sys.getenv("TPL_SGLV_RESAMPLE_SEED", unset = "20260915"))
 OVERWRITE <- toupper(Sys.getenv("TPL_SGLV_OVERWRITE", unset = "FALSE")) == "TRUE"
 
-if (!MODE %in% c("calibration", "process_intensity", "all"))
-  stop("TPL_SGLV_RESAMPLE_MODE must be calibration, process_intensity, or all")
+if (!MODE %in% c("calibration", "process_removal", "all"))
+  stop("TPL_SGLV_RESAMPLE_MODE must be calibration, process_removal, or all")
 if (!TPL_MODE %in% c("tTTPL", "pTTPL", "both"))
   stop("TPL_SGLV_TPL must be tTTPL, pTTPL, or both")
 
 conditions <- c("warming", "unwarming")
-processes <- c("immigration", "growth", "interaction", "noise")
+processes <- c("full", "immigration_removed", "growth_removed", "interaction_removed", "noise_removed")
 tpls <- if (TPL_MODE == "both") c("tTTPL", "pTTPL") else TPL_MODE
 
 read_taxa <- function(group, condition, depth) {
@@ -71,7 +71,6 @@ read_taxa <- function(group, condition, depth) {
 
 read_simulation <- function(file, expected_taxa) {
   x <- read.csv(file, row.names = 1, check.names = FALSE, stringsAsFactors = FALSE)
-  # Canonical Python output: years x taxa. Legacy outputs may be taxa x time.
   if (all(expected_taxa %in% colnames(x))) {
     x <- x[, expected_taxa, drop = FALSE]
     mat <- t(as.matrix(x))
@@ -131,8 +130,13 @@ run_directory <- function(indir, outdir, group, condition, depth, pattern) {
   for (i in seq_along(files)) {
     outfile <- file.path(outdir, basename(files[i]))
     # Stable file-specific seed so reruns are reproducible and independent of run order.
-    this_seed <- BASE_SEED + match(group, cfg$Group) * 100000L +
-      match(condition, conditions) * 10000L + i
+    match_id <- regmatches(basename(files[i]), regexec("rank([0-9]+)_.*_seed([0-9]+)_", basename(files[i])))[[1]]
+    if(length(match_id)==3L) {
+      this_seed <- BASE_SEED + match(group,cfg$Group)*100000L +
+        match(condition,conditions)*10000L + as.integer(match_id[2])*10L + as.integer(match_id[3])
+    } else {
+      this_seed <- BASE_SEED + match(group,cfg$Group)*100000L + match(condition,conditions)*10000L + i
+    }
     nw <- nw + as.integer(resample_one(files[i], outfile, taxa, depth, this_seed))
   }
   message(group, " | ", condition, " | ", basename(indir), ": wrote ", nw,
@@ -151,22 +155,22 @@ for (group in GROUPS) {
         file.path(ROOT, "get_timeseries", group, "raw", condition),
         file.path(ROOT, "Resample", group, "raw", condition),
         group, condition, depth,
-        "^Time_series_from_SLM_immigration_.*\\.csv$"
+        "^Time_series_from_sGLV_immigration_.*\\.csv$"
       )
     }
   }
 
-  if (MODE %in% c("process_intensity", "all")) {
+  if (MODE %in% c("process_removal", "all")) {
     for (tpl in tpls) {
       for (process in processes) {
         for (condition in conditions) {
           run_directory(
             file.path(ROOT, "get_timeseries", group, tpl,
-                      "process_intensity_top10", process, condition),
+                      "process_removal_top10", process, condition),
             file.path(ROOT, "Resample", group, tpl,
-                      "process_intensity_top10", process, condition),
+                      "process_removal_top10", process, condition),
             group, condition, depth,
-            "^Time_series_from_SLM_top10rank.*\\.csv$"
+            "^Time_series_from_sGLV_rank.*\\.csv$"
           )
         }
       }

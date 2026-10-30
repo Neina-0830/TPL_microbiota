@@ -7,7 +7,7 @@
 #   - summary of environmental data2010-2020.csv (sample/treatment metadata)
 #
 # The script reconstructs the empirical calibration targets used by the supplied
-# legacy workflow rather than requiring additional precomputed target files:
+# empirical community targets directly from the included data:
 #   1) temporal Bray-Curtis dissimilarity, averaged across plots within warming
 #      and unwarming conditions for each pair of years;
 #   2) warming-vs-unwarming spatial Bray-Curtis dissimilarity, averaged across
@@ -48,7 +48,7 @@ META_FILE <- file.path(DATA_DIR, "summary of environmental data2010-2020.csv")
 
 parse_calibration_filename <- function(file_name) {
   pat <- paste0(
-    "^Time_series_from_SLM_",
+    "^Time_series_from_sGLV_",
     "immigration_d([^_]+)_interaction_sd([^_]+)_growth_g([^_]+)_",
     "seed([^_]+)_noise([^\\.]+)\\.csv$"
   )
@@ -124,7 +124,7 @@ bray_from_sample_matrix <- function(sample_by_taxa, labels) {
   )
 }
 
-# Match the legacy empirical target: calculate temporal beta diversity within
+# Match the empirical target: calculate temporal beta diversity within
 # each plot, convert sample labels to years, then average a given year-pair
 # across all plots in the same warming condition.
 empirical_temporal_target <- function(counts, md, condition) {
@@ -146,7 +146,7 @@ empirical_temporal_target <- function(counts, md, condition) {
   agg[, c("name1", "name2", "bray")]
 }
 
-# Match the legacy spatial target: within each precipitation x clipping
+# Match the spatial target: within each precipitation x clipping
 # background, block and year, compare the corresponding warmed and unwarmed
 # sample; then average that distance across backgrounds/blocks for each year.
 empirical_spatial_target <- function(counts, md) {
@@ -181,7 +181,7 @@ empirical_spatial_target <- function(counts, md) {
   aggregate(bray ~ name1 + name2, all, mean, na.rm = TRUE)
 }
 
-# Match the legacy richness target: calculate warmed/unwarmed richness ratio in
+# Match the richness target: calculate warmed/unwarmed richness ratio in
 # every matched background x block x year cell and average across cells by year.
 empirical_richness_ratio_target <- function(counts, md) {
   richness <- colSums(counts > 0)
@@ -266,7 +266,7 @@ for (group in GROUPS) {
   for (condition in c("warming", "unwarming")) {
     idir <- file.path(ROOT, "Resample", group, "raw", condition)
     ff <- sort(list.files(idir,
-      pattern = "^Time_series_from_SLM_immigration_.*\\.csv$", full.names = TRUE))
+      pattern = "^Time_series_from_sGLV_immigration_.*\\.csv$", full.names = TRUE))
     if (!length(ff)) stop("No calibration resamples in: ", idir)
     mm <- do.call(rbind, lapply(ff, parse_calibration_filename))
     mm$File <- ff

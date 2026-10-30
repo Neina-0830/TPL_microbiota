@@ -1,32 +1,35 @@
-ID,Tier,Script,Purpose,Inputs,Outputs
-C00,core,code/00_prepare_data.R,"Prepare repository-local metadata, plot-level relative-abundance matrices and harmonized taxonomy from raw files in ./data.",./data/*,./data/prepared/*
-C01,core,code/01_empirical_TPL/01_tTTPL_fit_and_robustness.R,"Fit subplot-level tTTPL and calculate detrending, reference-variance, compositionality and community-temporal-variability robustness metrics.",./data/prepared/*,./results/01_tTTPL/
-C02,core,code/01_empirical_TPL/02_tTTPL_factorial_statistics.R,"Categorical split-plot inference for tTTPL, including overall factor effects and 11 treatment-versus-control contrasts.",C01 outputs,./results/02_tTTPL_factorial_statistics/
-C03,core,code/01_empirical_TPL/03_pTTPL_prepare_MPDik_by_plot.R,"Calculate abundance-weighted MPD and normalized taxon-specific phylogenetic contributions (MPD_i,k) from raw abundance tables and rooted trees.","./data community tables, trees; C00 metadata",./results/03_pTTPL_MPDik/; ./results/pairwise_distance/
-C04,core,code/01_empirical_TPL/04_pTTPL_fit_full_precision.R,Fit full-precision raw and detrended pTTPL slopes for each subplot.,C03 outputs; C00 metadata,./results/04_pTTPL/
-C05,core,code/01_empirical_TPL/05_pTTPL_factorial_statistics.R,"Categorical split-plot inference for pTTPL, parallel to C02.",C04 outputs; optionally C01 community variability,./results/05_pTTPL_factorial_statistics/
-C06,core,code/02_tipshuffle_null/06_pTTPL_tipshuffle_null_analysis.R,"Generate tip-shuffle phylogenetic nulls, refit pTTPL and perform matched observed-versus-null tests.",./data community tables and trees; C00 metadata; C04 observed pTTPL,./results/06_tipshuffle_null/
-C07,core,code/03_subgroup_TPL/07_tTTPL_subgroup_fit.R,Fit full-precision tTTPL within microbial phyla and Nematoda trophic groups.,./data/prepared/plot_abundance and taxonomy,./results/07_tTTPL_subgroup/
-C08,core,code/03_subgroup_TPL/08_pTTPL_subgroup_fit.R,Fit full-precision pTTPL within microbial phyla and Nematoda trophic groups.,"C03 MPD_i,k matrices; ./data/prepared/taxonomy",./results/08_pTTPL_subgroup/
-C09,core,code/03_subgroup_TPL/09_subgroup_factorial_statistics.R,Coverage filtering and hierarchical treatment inference for eligible subgroup TPL slopes.,C07 and C08 outputs,./results/09_subgroup_statistics/
-C10,core,code/04_environment_SEM/09_prepare_environment_SEM_inputs.R,Aggregate 11-year environmental means/CVs and merge them with tTTPL/pTTPL and treatment metadata.,./data environmental table; C00/C01/C04; optional C07/C08,./results/10_environment_SEM_inputs/
-C11,helper,code/04_environment_SEM/10_TPL_SEM_model_specs.R,Define the prespecified environmental backbone and group-specific TPL endpoint equations.,None,Model specification objects sourced by C13/C14
-C12,helper,code/04_environment_SEM/11_splitplot_piecewiseSEM_engine.R,"Shared split-plot mixed-effects piecewise-SEM engine, bootstrap, LOBO and effect decomposition.",C11 model specifications,Functions sourced by C13/C14
-C13,core,code/04_environment_SEM/12_tTTPL_piecewiseSEM.R,Run the primary tTTPL mixed-effects piecewise SEM.,C10; C11; C12,./results/11_tTTPL_piecewiseSEM/
-C14,core,code/04_environment_SEM/13_pTTPL_piecewiseSEM.R,Run the pTTPL mixed-effects piecewise SEM.,C10; C11; C12,./results/12_pTTPL_piecewiseSEM/
-C15,core,code/05_ecosystem_function/14_ecosystem_function_incremental.R,Test the incremental explanatory contribution of TPL beta to ecosystem-function variation beyond mean soil temperature.,C10 and subgroup wide tables,./results/13_ecosystem_function_incremental/
-C16,core,code/06_iCAMP/15_iCAMP_process_summary.R,Run/reuse iCAMP Confidence analysis and generate assembly-process summaries and treatment comparisons.,./data community/tree files; C00 prepared taxonomy/treatment metadata,./results/14_iCAMP/<Group>/
-C17,core,code/07_sGLV/16_check_sGLV_inputs.py,Preflight check for model-derived sGLV parameter inputs under ./data/sGLV.,./data/sGLV/*,Console validation
-C18,helper,code/07_sGLV/sGLV_core.py,"Shared sGLV simulation engine, group configuration and process-intensity parameterization.",./data/sGLV/*; sGLV_group_config.csv,Functions sourced by C19/C24
-C19,core,code/07_sGLV/17_sGLV_calibration_simulate.py,Generate all-group warmed/unwarmed sGLV calibration-grid simulations.,C17-validated ./data/sGLV inputs; C18,./results/17_sGLV/get_timeseries/
-C20,core,code/07_sGLV/18_sGLV_resample.R,Resample calibration or process-intensity simulations to group-specific sequencing depth.,C19 or C24 simulations; ./data/sGLV initial-abundance taxa,./results/17_sGLV/Resample/
-C21,core,code/07_sGLV/19_sGLV_calibration_TPL.R,Recalculate tTTPL and pTTPL across the calibration grid.,C20 calibration resamples; C03 pairwise distances for pTTPL,./results/17_sGLV/Taylor/<Group>/raw/
-C22,core,code/07_sGLV/20_sGLV_calibration_community_metrics.R,Reconstruct empirical Bray/richness calibration targets directly from ./data and compare them with simulated communities.,./data community and environmental files; C20 calibration resamples,./results/17_sGLV/Calibration/community/
-C23,core,code/07_sGLV/21_sGLV_select_top10.R,"Combine beta, Bray-Curtis and richness discrepancies and retain ten lowest-loss parameter sets separately for tTTPL and pTTPL.",C01/C04 empirical beta; C21; C22; calibration weights,"./results/17_sGLV/Calibration/{tTTPL,pTTPL}/"
-C24,core,code/07_sGLV/22_sGLV_process_intensity_simulate.py,"Generate top-10 process-intensity simulations over z = 0, 0.25, 0.50, 0.75, 1.",C18; C23; ./data/sGLV inputs,./results/17_sGLV/get_timeseries/<Group>/<TPL>/process_intensity_top10/
-C25,core,code/07_sGLV/23_sGLV_tTTPL_process_intensity.R,Recalculate tTTPL for top-10 process-intensity simulations.,C20 process-intensity resamples,./results/17_sGLV/Taylor/<Group>/tTTPL/process_intensity_top10/
-C26,core,code/07_sGLV/24_sGLV_pTTPL_process_intensity.R,"Recalculate MPD_i,k and pTTPL for top-10 process-intensity simulations.",C20 process-intensity resamples; C03 pairwise distances,./results/17_sGLV/Taylor/<Group>/pTTPL/process_intensity_top10/
-C27,core,code/07_sGLV/25_sGLV_process_intensity_importance.R,"Calculate AUC-based relative process sensitivity, signed/endpoint diagnostics and warming-contrast sensitivity.",C25 and C26,./results/17_sGLV/Taylor/process_intensity_top10_all_taxa/
-O01,optional,code/optional_SEM/01_splitplot_plssem_engine.R,Optional multilevel PLS path-model sensitivity engine.,C10/C11/C12-style inputs,Functions sourced by O02/O03
-O02,optional,code/optional_SEM/02_tTTPL_multilevel_plssem_sensitivity.R,Optional tTTPL multilevel PLS-SEM sensitivity analysis.,C10; C11; O01,./results/optional_tTTPL_plssem_sensitivity/
-O03,optional,code/optional_SEM/03_pTTPL_multilevel_plssem_sensitivity.R,Optional pTTPL multilevel PLS-SEM sensitivity analysis.,C10; C11; O01,./results/optional_pTTPL_plssem_sensitivity/
+ID,Type,Script
+C00,analysis,code/00_prepare_data.R
+C01,analysis,code/01_empirical_TPL/01_tTTPL_fit_and_robustness.R
+C02,analysis,code/01_empirical_TPL/02_tTTPL_factorial_statistics.R
+C03,analysis,code/01_empirical_TPL/03_pTTPL_prepare_MPDik_by_plot.R
+C04,analysis,code/01_empirical_TPL/04_pTTPL_fit_full_precision.R
+C05,analysis,code/01_empirical_TPL/05_pTTPL_factorial_statistics.R
+C06,analysis,code/02_tipshuffle_null/06_pTTPL_tipshuffle_null_analysis.R
+C07,analysis,code/02_tipshuffle_null/07_phylogroup_scaling_and_warming.R
+C08,analysis,code/03_subgroup_TPL/07_tTTPL_subgroup_fit.R
+C09,analysis,code/03_subgroup_TPL/08_pTTPL_subgroup_fit.R
+C10,analysis,code/03_subgroup_TPL/09_subgroup_factorial_statistics.R
+C11,analysis,code/04_environment_SEM/09_prepare_environment_SEM_inputs.R
+C12,helper,code/04_environment_SEM/10_TPL_SEM_model_specs.R
+C13,helper,code/04_environment_SEM/11_splitplot_piecewiseSEM_engine.R
+C14,analysis,code/04_environment_SEM/12_tTTPL_piecewiseSEM.R
+C15,analysis,code/04_environment_SEM/13_pTTPL_piecewiseSEM.R
+C16,analysis,code/05_ecosystem_function/14_environment_function_associations.R
+C17,analysis,code/05_ecosystem_function/15_temperature_TPL_variation_partitioning.R
+C18,analysis,code/06_iCAMP/15_iCAMP_process_summary.R
+C19,analysis,code/07_sGLV/16_check_sGLV_inputs.py
+C20,analysis,code/07_sGLV/17_sGLV_calibration_simulate.py
+C21,analysis,code/07_sGLV/18_sGLV_resample.R
+C22,analysis,code/07_sGLV/19_sGLV_calibration_TPL.R
+C23,analysis,code/07_sGLV/20_sGLV_calibration_community_metrics.R
+C24,analysis,code/07_sGLV/21_sGLV_select_top10.R
+C25,analysis,code/07_sGLV/22_sGLV_process_removal_simulate.py
+C26,analysis,code/07_sGLV/23_sGLV_process_removal_TPL.R
+C27,analysis,code/07_sGLV/24_sGLV_process_importance.R
+C28,analysis,code/07_sGLV/demo_process_removal.py
+C29,helper,code/07_sGLV/sGLV_core.py
+C30,helper,code/analysis_helpers.R
+C31,analysis,code/install_R_packages.R
+C32,analysis,code/validate_R_syntax.R
+C33,analysis,code/validate_repository.py

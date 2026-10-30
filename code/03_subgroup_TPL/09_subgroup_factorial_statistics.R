@@ -64,12 +64,12 @@ TARGET_TREATMENTS <- setdiff(TREATMENT_LEVELS, "Ctrl")
 MIN_PROP_VALID_PLOTS <- 0.75
 MIN_PER_TREATMENT <- 2L
 
-# "legacy_main" reproduces the intended main-figure scope:
+# "main" reproduces the intended main-figure scope:
 #   Archaea/Bacteria/Fungi/Protists -> Phylum
 #   Nematoda                         -> Trophic
 #
 # "all" keeps every fitted phylum/trophic category, including Protist trophic.
-FIG2D_SCOPE <- "legacy_main"
+FIG2D_SCOPE <- "main"
 
 # Optional plotting. Statistical CSV outputs are created regardless.
 MAKE_HEATMAPS <- TRUE
@@ -187,7 +187,7 @@ sig_label <- function(p) {
 scope_keep <- function(group, level_type) {
   if (FIG2D_SCOPE == "all") return(TRUE)
 
-  if (FIG2D_SCOPE == "legacy_main") {
+  if (FIG2D_SCOPE == "main") {
     return(
       (group %in% c("Archaea", "Bacteria", "Fungi", "Protists") &&
          level_type == "Phylum") ||

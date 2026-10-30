@@ -8,7 +8,7 @@
 #   Calibration/<TPL>/<Group>_all_parameter_loss.csv
 #   Calibration/<TPL>/<Group>_top10_parameters.csv
 #
-# The top-10 tables are the direct inputs to 22_sGLV_process_intensity_simulate.py.
+# The top-10 tables are the direct inputs to 22_sGLV_process_removal_simulate.py.
 # ==============================================================================
 
 rm(list = ls())
@@ -38,7 +38,7 @@ seed_cols <- c(param_cols, "Seed")
 
 read_empirical_beta <- function(group, tpl) {
   # Use the canonical plot-level empirical beta outputs produced earlier in this
-  # repository, rather than legacy warming-comparison files.
+  # repository, from the empirical fitting modules.
   manuscript_group <- if (group == "Fungi_18S") "Fungi" else group
   f <- if (tpl == "tTTPL") {
     file.path(PROJECT_ROOT, "results", "01_tTTPL",
@@ -65,7 +65,7 @@ read_sim_beta <- function(group, condition, tpl) {
   f <- file.path(
     ROOT, "Taylor", group, "raw", condition,
     paste0(prefix,
-      "SLM_all_immigration_interaction_growth_all_seed_noise_all_species_Taylor_beta.csv")
+      "sGLV_all_immigration_interaction_growth_all_seed_noise_all_species_Taylor_beta.csv")
   )
   if (!file.exists(f)) stop("Missing calibration TPL table: ", f)
   x <- read.csv(f, check.names = FALSE, stringsAsFactors = FALSE)
@@ -128,7 +128,27 @@ for (tpl in c("tTTPL", "pTTPL")) {
     all <- all[order(all$CalibrationLoss, all$Immigration, all$Interaction,
                      all$Growth, all$Noise), ]
     all$Rank <- seq_len(nrow(all))
-    top10 <- all[seq_len(min(10L, nrow(all))), ]
+    ef <- if (tpl == "tTTPL") file.path(PROJECT_ROOT, "results/01_tTTPL/UPARSE_all_groups_plot_level_revision_metrics.csv") else file.path(PROJECT_ROOT, "results/04_pTTPL/pTTPL_all_groups_plot_level_full_precision.csv")
+    observed <- read.csv(ef, check.names = FALSE)
+    observed <- observed[observed$Group == if(group == "Fungi_18S") "Fungi" else group, ]
+    matches <- function(df, row) {
+      ok <- rep(TRUE, nrow(df))
+      for (nm in param_cols) ok <- ok & abs(df[[nm]] - row[[nm]]) < 1e-12
+      df$Beta[ok]
+    }
+    for (cond in c("warming", "unwarming")) {
+      sims <- if(cond == "warming") w else u
+      obs <- observed$Beta_raw[observed$warm == if(cond == "warming") 1 else 0]
+      all[[paste0("P_", cond)]] <- vapply(seq_len(nrow(all)), function(i) {
+        sim <- matches(sims, all[i, ])
+        if(length(sim) < 2L || !all(is.finite(sim))) return(NA_real_)
+        stats::wilcox.test(sim, obs, alternative="two.sided", exact=FALSE)$p.value
+      }, numeric(1))
+    }
+    eligible <- all[is.finite(all$P_warming) & is.finite(all$P_unwarming) &
+                    all$P_warming >= 0.05 & all$P_unwarming >= 0.05, ]
+    top10 <- head(eligible, 10L)
+    top10$Rank <- seq_len(nrow(top10))
     if (nrow(top10) < 10L) stop(group, " ", tpl, ": fewer than 10 candidate parameter sets.")
 
     outdir <- file.path(ROOT, "Calibration", tpl)

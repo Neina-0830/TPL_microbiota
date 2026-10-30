@@ -1,11 +1,6 @@
 # ==============================================================================
 # pTTPL tip-shuffle null analysis — end-to-end
 # ==============================================================================
-# This script replaces three legacy files:
-#   Calculate_null_MPDik.R
-#   Taylor_law_power_pTTPL_test_null_model.R
-#   2.Taylor_law_power_compare_null.R
-#
 # For each soil-biotic group it:
 #   1) tip-shuffles the empirical phylogeny 100 times by default;
 #   2) recalculates MPD_i,k while retaining empirical abundance trajectories;
@@ -44,9 +39,8 @@ dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
 N_SHUFFLES <- as.integer(Sys.getenv("TPL_TIPSHUFFLE_N", unset = "100"))
 if (!is.finite(N_SHUFFLES) || N_SHUFFLES < 1L) stop("TPL_TIPSHUFFLE_N must be >= 1.")
 
-# The legacy analysis did not record a fixed random seed. To preserve that
-# behavior, no seed is imposed unless TPL_TIPSHUFFLE_SEED is explicitly set.
-seed_text <- Sys.getenv("TPL_TIPSHUFFLE_SEED", unset = "")
+# Set the random seed explicitly for reproducible Monte Carlo randomizations.
+seed_text <- Sys.getenv("TPL_TIPSHUFFLE_SEED", unset = "20261021")
 if (nzchar(seed_text)) set.seed(as.integer(seed_text))
 
 group_text <- Sys.getenv(
@@ -301,3 +295,17 @@ write.csv(paired_tests, file.path(OUT_DIR, "tipshuffle_paired_tests.csv"),
 
 message("\nTip-shuffle analysis completed. Outputs: ", OUT_DIR)
 print(paired_tests)
+
+# Test warming responses beyond the tip-shuffle expectation, preserving hierarchy.
+source(file.path(PROJECT_DIR,"code/analysis_helpers.R"))
+require_packages(c("lmerTest","emmeans","pbkrtest"))
+md <- read.csv(file.path(PROJECT_DIR,"data/prepared/treatment_metadata_48plots.csv"),check.names=FALSE)
+d <- merge(paired,md,by.x="Plot",by.y="plot",all.x=TRUE)
+d <- design_factors(d)
+warming <- lapply(split(d,d$Group),function(z) {
+ fit <- lmerTest::lmer(Delta_observed_minus_null~WarmF*PrecipF*ClipF+(1|Block/WholePlotID),z)
+ a <- overall_contrasts(fit);a <- a[a$contrast=="Warming",]
+ cbind(Group=z$Group[1],a)
+})
+warming <- do.call(rbind,warming);warming$P_Holm_five_groups <- p.adjust(warming$p.value,"holm")
+write_table(warming,file.path(OUT_DIR,"observed_minus_null_warming_response.csv"))

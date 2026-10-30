@@ -39,7 +39,7 @@ TPLS <- if (TPL_MODE == "both") c("tTTPL", "pTTPL") else TPL_MODE
 
 parse_calibration_filename <- function(file_name) {
   pat <- paste0(
-    "^Time_series_from_SLM_",
+    "^Time_series_from_sGLV_",
     "immigration_d([^_]+)_interaction_sd([^_]+)_growth_g([^_]+)_",
     "seed([^_]+)_noise([^\\.]+)\\.csv$"
   )
@@ -170,7 +170,7 @@ for (group in GROUPS) {
   for (condition in c("warming", "unwarming")) {
     indir <- file.path(ROOT, "Resample", group, "raw", condition)
     files <- sort(list.files(indir,
-      pattern = "^Time_series_from_SLM_immigration_.*\\.csv$", full.names = TRUE))
+      pattern = "^Time_series_from_sGLV_immigration_.*\\.csv$", full.names = TRUE))
     if (!length(files)) stop("No calibration resample files found in: ", indir)
 
     t_rows <- list()
@@ -197,13 +197,13 @@ for (group in GROUPS) {
     if (length(t_rows)) {
       write.csv(do.call(rbind, t_rows),
         file.path(outdir,
-          "SLM_all_immigration_interaction_growth_all_seed_noise_all_species_Taylor_beta.csv"),
+          "sGLV_all_immigration_interaction_growth_all_seed_noise_all_species_Taylor_beta.csv"),
         row.names = FALSE, quote = FALSE)
     }
     if (length(p_rows)) {
       write.csv(do.call(rbind, p_rows),
         file.path(outdir,
-          "MPD_weighted_SLM_all_immigration_interaction_growth_all_seed_noise_all_species_Taylor_beta.csv"),
+          "MPD_weighted_sGLV_all_immigration_interaction_growth_all_seed_noise_all_species_Taylor_beta.csv"),
         row.names = FALSE, quote = FALSE)
     }
     message("Finished calibration TPL: ", group, " | ", condition)
